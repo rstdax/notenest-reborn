@@ -94,7 +94,7 @@
         // Authentication state listener
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) {
-                location.replace("https://notenestweb.blogspot.com/2025/03/sign-in-notenest.html");
+                location.replace("https://rstdax.github.io/notenest-reborn/login.html");
             } else {
                 document.getElementById("user").innerHTML = `Hello, ${user.email}`;
             }
