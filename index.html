@@ -304,7 +304,7 @@
                 <div class="tab" data-category="IDC" aria-label="IDC/MDC notes">IDC/MDC</div>
                 <div class="tab" data-category="SEC" aria-label="SEC notes">SEC</div>
             </div>
-            <input type="text" id="search-bar" placeholder="Search chapters..." class="w-full max-w-md mx-auto mb-6 slide-in" aria-label="Search chapters">
+            <input type="text" id="search-bar" placeholder="Search chapters..." class="p-2 w-full max-w-md mx-auto mb-6 slide-in" aria-label="Search chapters">
             <div id="progress-bar" class="hidden flex justify-center items-center mb-6 spinner-container">
                 <div class="spinner"></div>
             </div>
@@ -317,15 +317,15 @@
             <h2 class="text-xl font-semibold mb-4 text-gray-800">Admin Panel</h2>
             <div class="mb-6">
                 <h3 class="text-lg font-medium mb-3 slide-in">Add New Subject</h3>
-                <input type="text" id="subject-name" placeholder="Subject Name" class="w-full mb-3" aria-label="Subject name">
-                <input type="url" id="subject-image-url" placeholder="Image URL" class="w-full mb-3" aria-label="Subject image URL">
+                <input type="text" id="subject-name" placeholder="Subject Name" class="p-2 w-full mb-3" aria-label="Subject name">
+                <input type="url" id="subject-image-url" placeholder="Image URL" class="p-2 w-full mb-3" aria-label="Subject image URL">
                 <img id="subject-image-preview" src="" alt="Image Preview" class="w-full rounded-lg">
                 <button id="add-subject-btn" class="w-full btn-primary mt-3" aria-label="Add subject">Add Subject</button>
             </div>
             <div>
                 <h3 class="text-lg font-medium mb-3 slide-in">Add/Modify Chapter</h3>
-                <input type="text" id="note-text" placeholder="Chapter Title" class="w-full mb-3" aria-label="Chapter title">
-                <input type="url" id="note-link" placeholder="Chapter Link URL" class="w-full mb-3" aria-label="Chapter link">
+                <input type="text" id="note-text" placeholder="Chapter Title" class="p-2 w-full mb-3" aria-label="Chapter title">
+                <input type="url" id="note-link" placeholder="Chapter Link URL" class="p-2 w-full mb-3" aria-label="Chapter link">
                 <button id="add-note-btn" class="w-full btn-primary" aria-label="Add chapter">Add Chapter</button>
             </div>
         </section>
@@ -333,8 +333,8 @@
         <!-- Authentication Section -->
         <section id="auth-section" class="flex flex-col items-center justify-center min-h-[60vh]">
             <h2 class="text-2xl font-semibold text-gray-800 mb-6 slide-in">Sign In to NoteNest</h2>
-            <input type="email" id="email" placeholder="Email" class="w-full max-w-md mb-3" aria-label="Email">
-            <input type="password" id="password" placeholder="Password" class="w-full max-w-md mb-3" aria-label="Password">
+            <input type="email" id="email" placeholder="Email" class="p-2 w-full max-w-md mb-3" aria-label="Email">
+            <input type="password" id="password" placeholder="Password" class="p-2 w-full max-w-md mb-3" aria-label="Password">
             <button id="login-btn" class="w-full max-w-md btn-primary mb-3 slide-in" aria-label="Sign in">Sign In</button>
             <button id="google-signin-btn" class="w-full max-w-md bg-red-600 hover:bg-red-700 text-white p-3 rounded-lg slide-in" aria-label="Sign in with Google">Sign In with Google</button>
             <p class="mt-4 text-sm slide-in">Don't have an account? <a href="#" id="signup-link" class="text-blue-600 hover:underline">Sign Up</a></p>
