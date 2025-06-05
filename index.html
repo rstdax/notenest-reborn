@@ -884,8 +884,9 @@
                     div.innerHTML = `
                         <div class="flex items-center gap-2">
                             <img src="${image.imageUrl}" alt="Slideshow Image">
-                            <span class="text-sm truncate">${image.imageUrl}</span>
+                        
                         </div>
+                        <br>
                         <button class="btn-danger" data-key="${childSnapshot.key}" onclick="deleteSlideshowImage('${childSnapshot.key}')">Delete</button>
                     `;
                     slideshowImagesList.appendChild(div);
