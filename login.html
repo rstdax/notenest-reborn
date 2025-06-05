@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NoteNest Web</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Ubuntu:wght@700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #dbe8ff 0%, #e6f0ff 100%);
+            font-family: 'Roboto', sans-serif;
+        }
+        .custom-field {
+            position: relative;
+            font-size: 14px;
+            margin-top: 1rem;
+        }
+        .custom-field input {
+            padding: 12px;
+            width: 100%;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 2px solid #3b5e93;
+            outline: none;
+            background-color: #f8fafc;
+            transition: border-color 0.3s ease;
+        }
+        .custom-field input:focus {
+            border-color: #1e90ff;
+        }
+        .custom-field .placeholder {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .custom-field input:valid + .placeholder,
+        .custom-field input:focus + .placeholder {
+            top: -8px;
+            font-size: 12px;
+            color: #1e90ff;
+            background: #fff;
+            padding: 0 5px;
+        }
+        .navbar {
+            background: linear-gradient(90deg, #1f77cf, #2563eb);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+        <div class="navbar flex items-center justify-between p-4 text-white">
+            <div class="flex items-center space-x-2">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhBzekwdbiyB_Z18hraNIlBKAgipYPu__QzxNPXix8DvuXTXOL2krK-bJaSLUMaFglbKWMOeSQFKhhetM7L1_9e4JG_kVF8W6_Qe0DsoSMjZZhivaUWf0iotHvhcjaAMTYyW5q3j_zPNvt4etXuPnjMP0Grji46F9QVEaFFuKOYeLy-Er9ystOqDxzBAebd/s1600/rst_logo_white.png" alt="Logo" class="w-8 h-8">
+                <span class="font-bold text-lg font-ubuntu">Royal Synergy Technology</span>
+            </div>
+        </div>
+        <div class="p-6">
+            <h2 class="text-2xl font-ubuntu text-center text-gray-900 mb-2">NoteNest Web</h2>
+            <h3 class="text-lg font-semibold text-center text-gray-700 mb-6">Login / Registration</h3>
+            <form id="loginForm" class="space-y-4" onsubmit="login()">
+                <div class="error-message" id="error"></div>
+                <div class="custom-field">
+                    <input id="email" type="email" required class="input" />
+                    <span class="placeholder">Email Address</span>
+                </div>
+                <div class="custom-field">
+                    <input id="password" type="password" required class="input" />
+                    <span class="placeholder">Password</span>
+                </div>
+                <div class="text-center">
+                    <a href="#" onclick="forgotPass()" class="text-sm text-blue-600 hover:underline">Forgot Password?</a>
+                </div>
+                <div class="flex justify-center space-x-4">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">Login</button>
+                    <button type="button" onclick="signUp()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">Sign Up</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.2/firebase-auth.js"></script>
+
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyCCwg1J5uijTvM-mGlW0g5PN9SgL7lyCqg",
+            authDomain: "notenest-official.firebaseapp.com",
+            databaseURL: "https://notenest-official-default-rtdb.firebaseio.com",
+            projectId: "notenest-official",
+            storageBucket: "notenest-official.firebasestorage.app",
+            messagingSenderId: "123694074747",
+            appId: "1:123694074747:web:a541597cb341a0de190bde",
+            measurementId: "G-KEV3VTZ7EB"
+        };
+
+        var app = firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+
+        document.getElementById("loginForm").addEventListener("submit", (event) => {
+            event.preventDefault();
+        });
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                location.replace("https://rstdax.github.io/notenest-reborn/pyqpage.html");
+            }
+        });
+
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    document.getElementById("error").innerHTML = error.message;
+                });
+        }
+
+        function signUp() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    document.getElementById("error").innerHTML = error.message;
+                });
+        }
+
+        function forgotPass() {
+            const email = document.getElementById("email").value;
+            firebase.auth().sendPasswordResetEmail(email)
+                .then(() => {
+                    alert("Reset link sent to your email address");
+                })
+                .catch((error) => {
+                    document.getElementById("error").innerHTML = error.message;
+                });
+        }
+    </script>
+</body>
+</html>
