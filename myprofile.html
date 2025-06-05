@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - NoteNest Web</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Ubuntu:wght@700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #dbe8ff 0%, #e6f0ff 100%);
+            font-family: 'Roboto', sans-serif;
+        }
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid #3b5e93;
+        }
+        .navbar {
+            background: linear-gradient(90deg, #1f77cf, #2563eb);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .error-message, .success-message {
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        .error-message {
+            color: #dc2626;
+        }
+        .success-message {
+            color: #16a34a;
+        }
+        .image-selector img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        .image-selector img:hover, .image-selector img.selected {
+            border-color: #1e90ff;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+        <div class="navbar flex items-center justify-between p-4 text-white">
+            <div class="flex items-center space-x-2">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhBzekwdbiyB_Z18hraNIlBKAgipYPu__QzxNPXix8DvuXTXOL2krK-bJaSLUMaFglbKWMOeSQFKhhetM7L1_9e4JG_kVF8W6_Qe0DsoSMjZZhivaUWf0iotHvhcjaAMTYyW5q3j_zPNvt4etXuPnjMP0Grji46F9QVEaFFuKOYeLy-Er9ystOqDxzBAebd/s1600/rst_logo_white.png" alt="Logo" class="w-8 h-8">
+                <span class="font-bold text-lg font-ubuntu">Royal Synergy Technology</span>
+            </div>
+        </div>
+        <div class="p-6">
+            <h2 class="text-2xl font-ubuntu text-center text-gray-900 mb-2">User Profile</h2>
+            <div class="flex justify-center mb-6">
+                <img id="profilePic" src="https://via.placeholder.com/150?text=Default" alt="Profile Picture" class="profile-pic">
+            </div>
+            <div class="text-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-700">Email</h3>
+                <p id="userEmail" class="text-gray-600">Loading...</p>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-center text-gray-700 mb-2">Select Profile Picture</h3>
+                <div class="image-selector flex justify-center space-x-2 flex-wrap">
+                    <img src="https://via.placeholder.com/60?text=Pic1" alt="Pic1" onclick="selectProfilePic(this.src)">
+                    <img src="https://via.placeholder.com/60?text=Pic2" alt="Pic2" onclick="selectProfilePic(this.src)">
+                    <img src="https://via.placeholder.com/60?text=Pic3" alt="Pic3" onclick="selectProfilePic(this.src)">
+                    <img src="https://via.placeholder.com/60?text=Pic4" alt="Pic4" onclick="selectProfilePic(this.src)">
+                    <img src="https://via.placeholder.com/60?text=Pic5" alt="Pic5" onclick="selectProfilePic(this.src)">
+                    <img src="https://via.placeholder.com/60?text=Pic6" alt="Pic6" onclick="selectProfilePic(this.src)">
+                </div>
+            </div>
+            <div class="error-message" id="error"></div>
+            <div class="success-message" id="success"></div>
+            <div class="flex justify-center space-x-4 mt-6">
+                <button onclick="resetPassword()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">Reset Password</button>
+                <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.2/firebase-auth.js"></script>
+
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyCCwg1J5uijTvM-mGlW0g5PN9SgL7lyCqg",
+            authDomain: "notenest-official.firebaseapp.com",
+            databaseURL: "https://notenest-official-default-rtdb.firebaseio.com",
+            projectId: "notenest-official",
+            storageBucket: "notenest-official.firebasestorage.app",
+            messagingSenderId: "123694074747",
+            appId: "1:123694074747:web:a541597cb341a0de190bde",
+            measurementId: "G-KEV3VTZ7EB"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+
+        let selectedProfilePic = localStorage.getItem('profilePic') || 'https://cdn-icons-png.flaticon.com/256/8996/8996013.png';
+        document.getElementById('profilePic').src = selectedProfilePic;
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('userEmail').textContent = user.email;
+            } else {
+                location.replace("login.html"); // Redirect to login if not authenticated
+            }
+        });
+
+        function selectProfilePic(src) {
+            selectedProfilePic = src;
+            document.getElementById('profilePic').src = src;
+            localStorage.setItem('profilePic', src);
+            document.querySelectorAll('.image-selector img').forEach(img => {
+                img.classList.remove('selected');
+                if (img.src === src) img.classList.add('selected');
+            });
+        }
+
+        function resetPassword() {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                firebase.auth().sendPasswordResetEmail(user.email)
+                    .then(() => {
+                        document.getElementById('success').textContent = "Password reset link sent to your email.";
+                        document.getElementById('error').textContent = "";
+                    })
+                    .catch((error) => {
+                        document.getElementById('error').textContent = error.message;
+                        document.getElementById('success').textContent = "";
+                    });
+            } else {
+                document.getElementById('error').textContent = "No user is currently logged in.";
+                document.getElementById('success').textContent = "";
+            }
+        }
+
+        function logout() {
+            firebase.auth().signOut()
+                .then(() => {
+                    localStorage.removeItem('profilePic');
+                    location.replace("login.html");
+                })
+                .catch((error) => {
+                    document.getElementById('error').textContent = error.message;
+                    document.getElementById('success').textContent = "";
+                });
+        }
+    </script>
+</body>
+</html>
