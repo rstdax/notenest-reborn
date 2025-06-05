@@ -1,15 +1,578 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NoteNest - Study Materials for Students</title>
-    <meta name="description" content="Access study materials and notes for all your undergraduate courses" />
-    <script type="module" crossorigin src="index-CaelDt24.js"></script>
-    <link rel="stylesheet" crossorigin href="index-D4WHtNQ-.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteNest - Student Resources</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #cbe5ff, #ffffff);
+        }
+        .subject-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .subject-card img {
+            aspect-ratio: 1/1;
+            object-fit: cover;
+        }
+        .hidden {
+            display: none;
+            opacity: 0;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .slide-in-bounce {
+            animation: slideInBounce 0.5s ease-out forwards;
+            animation-delay: calc(var(--delay, 0) * 0.1s);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInBounce {
+            from { opacity: 0; transform: translateY(20px); }
+            70% { transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .btn-primary {
+            background-color: #208cff;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: #55aaff;
+            transform: scale(1.05);
+        }
+        .btn-primary:active {
+            animation: pulse 0.2s ease;
+        }
+        .btn-primary:focus {
+            outline: 2px solid #55aaff;
+            outline-offset: 2px;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            cursor: pointer;
+            background-color: #f1f5f9;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .tab.active {
+            background-color: #208cff;
+            color: white;
+            font-weight: 600;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: white;
+            animation: underline 0.3s ease forwards;
+        }
+        @keyframes underline {
+            to { width: 50%; transform: translateX(-50%); }
+        }
+        .tab:hover:not(.active) {
+            background-color: #cbe5ff;
+        }
+        .spinner {
+            border: 4px solid #cbe5ff;
+            border-top: 4px solid #208cff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        .spinner-container {
+            animation: pulseBg 1.5s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulseBg {
+            0%, 100% { background-color: #cbe5ff; }
+            50% { background-color: #e0edff; }
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 10;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+            h2 {
+                font-size: 1.25rem;
+            }
+            .subject-card img {
+                height: 100px;
+            }
+            .semester-btn {
+                font-size: 0.875rem;
+            }
+            .tab {
+                font-size: 0.75rem;
+                padding: 0.5rem 0.25rem;
+            }
+        }
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .subject-card img {
+                height: 120px;
+            }
+            .tab {
+                font-size: 0.875rem;
+            }
+        }
+        #subject-image-preview {
+            max-height: 80px;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            display: none;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            animation: imagePreview 0.3s ease-out;
+        }
+        @keyframes imagePreview {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        input {
+            transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        }
+        input:focus {
+            border-color: #208cff;
+            transform: scale(1.02);
+            box-shadow: 0 0 8px rgba(32, 140, 255, 0.3);
+            outline: none;
+        }
+        section {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        section:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        section.hidden {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="w-full bg-[#208cff] text-white py-3 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight">NoteNest</h1>
+            <button id="logout-btn" class="btn-primary text-sm px-3 py-1 rounded-full hidden" aria-label="Logout">Logout</button>
+        </div>
+    </header>
+  
+  <br>
+
+    <main class="container mx-auto px-4 py-4 flex-grow">
+        <!-- Semester Selection -->
+        <section id="semester-selection" class="mb-4 hidden">
+            <h2 class="text-lg sm:text-xl font-semibold text-center text-gray-800 mb-3 slide-in">Choose Your Semester</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="1" aria-label="Semester 1">Semester 1</button>
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="2" aria-label="Semester 2">Semester 2</button>
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="3" aria-label="Semester 3">Semester 3</button>
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="4" aria-label="Semester 4">Semester 4</button>
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="5" aria-label="Semester 5">Semester 5</button>
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="6" aria-label="Semester 6">Semester 6</button>
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="7" aria-label="Semester 7">Semester 7</button>
+                <button class="semester-btn bg-[#55aaff] text-white py-2 rounded-lg font-medium slide-in" data-semester="8" aria-label="Semester 8">Semester 8</button>
+            </div>
+        </section>
+
+        <!-- Subject Grid -->
+        <section id="subject-grid" class="hidden">
+            <h2 class="text-lg sm:text-xl font-semibold text-center text-gray-800 mb-3 slide-in">Select Subject</h2>
+            <div id="subjects-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+            <button id="back-to-semesters" class="mt-3 btn-primary text-white px-4 py-2 rounded-full w-full max-w-xs mx-auto text-sm sm:text-base slide-in" aria-label="Back to semesters">Back to Semesters</button>
+        </section>
+
+        <!-- Notes Section -->
+        <section id="notes-section" class="hidden">
+            <h2 id="subject-title" class="text-lg sm:text-xl font-semibold text-center text-gray-800 mb-3 slide-in"></h2>
+            <div class="flex flex-wrap justify-center gap-1 mb-3 max-w-xs mx-auto slide-in">
+                <div class="tab" data-category="Major" aria-label="Major notes">Major</div>
+                <div class="tab" data-category="Minor" aria-label="Minor notes">Minor</div>
+                <div class="tab" data-category="AEC" aria-label="AEC notes">AEC</div>
+                <div class="tab" data-category="IDC" aria-label="IDC/MDC notes">IDC/MDC</div>
+                <div class="tab" data-category="SEC" aria-label="SEC notes">SEC</div>
+            </div>
+            <input type="text" id="search-bar" placeholder="Search chapters..." class="w-full max-w-xs mx-auto mb-3 p-2 border rounded-lg text-sm sm:text-base slide-in" aria-label="Search chapters">
+            <div id="progress-bar" class="hidden flex justify-center items-center mb-3 spinner-container p-2 rounded-lg">
+                <div class="spinner"></div>
+            </div>
+            <ul id="notes-list" class="w-full max-w-xs mx-auto space-y-2"></ul>
+            <button id="back-to-subjects" class="mt-3 btn-primary text-white px-4 py-2 rounded-full w-full max-w-xs mx-auto text-sm sm:text-base slide-in" aria-label="Back to subjects">Back to Subjects</button>
+        </section>
+
+        <!-- Admin Panel -->
+        <section id="admin-panel" class="hidden mt-4 bg-white p-4 rounded-lg shadow-lg max-w-xs sm:max-w-md w-full mx-auto slide-in">
+            <h2 class="text-base sm:text-lg font-semibold mb-3 text-gray-800">Admin Panel</h2>
+            <div class="mb-3">
+                <h3 class="text-sm sm:text-base font-medium mb-2 slide-in">Add New Subject</h3>
+                <input type="text" id="subject-name" placeholder="Subject Name" class="w-full p-2 border rounded-lg mb-2 text-sm sm:text-base" aria-label="Subject name">
+                <input type="url" id="subject-image-url" placeholder="Image URL" class="w-full p-2 border rounded-lg mb-2 text-sm sm:text-base" aria-label="Subject image URL">
+                <img id="subject-image-preview" src="" alt="Image Preview" class="w-full rounded-lg">
+                <button id="add-subject-btn" class="w-full btn-primary text-white p-2 rounded-lg text-sm sm:text-base" aria-label="Add subject">Add Subject</button>
+            </div>
+            <div>
+                <h3 class="text-sm sm:text-base font-medium mb-2 slide-in">Add/Modify Chapter</h3>
+                <input type="text" id="note-text" placeholder="Chapter Title" class="w-full p-2 border rounded-lg mb-2 text-sm sm:text-base" aria-label="Chapter title">
+                <input type="url" id="note-link" placeholder="Chapter Link URL" class="w-full p-2 border rounded-lg mb-2 text-sm sm:text-base" aria-label="Chapter link">
+                <button id="add-note-btn" class="w-full btn-primary text-white p-2 rounded-lg text-sm sm:text-base" aria-label="Add chapter">Add Chapter</button>
+            </div>
+        </section>
+
+        <!-- Authentication Section -->
+        <section id="auth-section" class="flex flex-col items-center justify-center min-h-[60vh]">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 slide-in">Sign In to NoteNest</h2>
+            <input type="email" id="email" placeholder="Email" class="w-full max-w-xs p-2 border rounded-lg mb-2 text-sm sm:text-base" aria-label="Email">
+            <input type="password" id="password" placeholder="Password" class="w-full max-w-xs p-2 border rounded-lg mb-2 text-sm sm:text-base" aria-label="Password">
+            <button id="login-btn" class="w-full max-w-xs btn-primary text-white p-2 rounded-lg mb-2 text-sm sm:text-base slide-in" aria-label="Sign in">Sign In</button>
+            <button id="google-signin-btn" class="w-full max-w-xs bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 text-sm sm:text-base slide-in" aria-label="Sign in with Google">Sign In with Google</button>
+            <p class="mt-2 text-sm sm:text-base slide-in">Don't have an account? <a href="#" id="signup-link" class="text-[#208cff] hover:underline">Sign Up</a></p>
+        </section>
+    </main>
+
+    <footer id="footer" class="bg-[#208cff] text-white py-2 text-center hidden">
+        <p class="text-xs sm:text-sm">© 2025 NoteNest. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCwg1J5uijTvM-mGlW0g5PN9SgL7lyCqg",
+            authDomain: "notenest-official.firebaseapp.com",
+            databaseURL: "https://notenest-official-default-rtdb.firebaseio.com",
+            projectId: "notenest-official",
+            storageBucket: "notenest-official.firebasestorage.app",
+            messagingSenderId: "123694074747",
+            appId: "1:123694074747:web:a541597cb341a0de190bde",
+            measurementId: "G-KEV3VTZ7EB"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const semesterSelection = document.getElementById('semester-selection');
+        const subjectGrid = document.getElementById('subject-grid');
+        const notesSection = document.getElementById('notes-section');
+        const adminPanel = document.getElementById('admin-panel');
+        const logoutBtn = document.getElementById('logout-btn');
+        const subjectsList = document.getElementById('subjects-list');
+        const notesList = document.getElementById('notes-list');
+        const searchBar = document.getElementById('search-bar');
+        const progressBar = document.getElementById('progress-bar');
+        const subjectTitle = document.getElementById('subject-title');
+        const loginBtn = document.getElementById('login-btn');
+        const googleSignInBtn = document.getElementById('google-signin-btn');
+        const signupLink = document.getElementById('signup-link');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const addSubjectBtn = document.getElementById('add-subject-btn');
+        const subjectNameInput = document.getElementById('subject-name');
+        const subjectImageUrlInput = document.getElementById('subject-image-url');
+        const subjectImagePreview = document.getElementById('subject-image-preview');
+        const addNoteBtn = document.getElementById('add-note-btn');
+        const noteTextInput = document.getElementById('note-text');
+        const noteLinkInput = document.getElementById('note-link');
+        const backToSemesters = document.getElementById('back-to-semesters');
+        const backToSubjects = document.getElementById('back-to-subjects');
+        const footer = document.getElementById('footer');
+
+        let selectedSemester = sessionStorage.getItem('selectedSemester') || null;
+        let selectedSubject = null;
+        let selectedCategory = 'Major';
+        let notesRef = null;
+        let allNotes = [];
+
+        // Authentication State Listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                authSection.classList.add('hidden');
+                footer.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                if (user.email === 'rstrohan1@gmail.com') {
+                    adminPanel.classList.remove('hidden');
+                }
+                if (selectedSemester) {
+                    semesterSelection.classList.add('hidden');
+                    subjectGrid.classList.remove('hidden');
+                    fetchSubjects();
+                } else {
+                    semesterSelection.classList.remove('hidden');
+                }
+            } else {
+                authSection.classList.remove('hidden');
+                footer.classList.remove('hidden');
+                semesterSelection.classList.add('hidden');
+                subjectGrid.classList.add('hidden');
+                notesSection.classList.add('hidden');
+                adminPanel.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+            }
+        });
+
+        // Email/Password Sign In
+        loginBtn.addEventListener('click', () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!email || !password) {
+                alert('Please enter both email and password.');
+                return;
+            }
+            auth.signInWithEmailAndPassword(email, password)
+                .catch((error) => alert(`Error signing in: ${error.message}`));
+        });
+
+        // Google Sign In
+        googleSignInBtn.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch((error) => alert(`Error signing in with Google: ${error.message}`));
+        });
+
+        // Sign Up
+        signupLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!email || !password) {
+                alert('Please enter both email and password to sign up.');
+                return;
+            }
+            auth.createUserWithEmailAndPassword(email, password)
+                .catch((error) => alert(`Error signing up: ${error.message}`));
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut().catch((error) => alert(`Error signing out: ${error.message}`));
+        });
+
+        // Semester Selection
+        document.querySelectorAll('.semester-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                selectedSemester = e.target.dataset.semester;
+                sessionStorage.setItem('selectedSemester', selectedSemester);
+                semesterSelection.classList.add('hidden');
+                subjectGrid.classList.remove('hidden');
+                fetchSubjects();
+            });
+        });
+
+        // Back to Semesters
+        backToSemesters.addEventListener('click', () => {
+            subjectGrid.classList.add('hidden');
+            notesSection.classList.add('hidden');
+            semesterSelection.classList.remove('hidden');
+        });
+
+        // Back to Subjects
+        backToSubjects.addEventListener('click', () => {
+            notesSection.classList.add('hidden');
+            subjectGrid.classList.remove('hidden');
+        });
+
+        // Tab Selection
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                selectedCategory = e.target.dataset.category;
+                notesList.classList.add('fade-in');
+                fetchNotes();
+            });
+        });
+
+        // Set default tab
+        document.querySelector('.tab[data-category="Major"]').classList.add('active');
+
+        // Fetch Subjects
+        function fetchSubjects() {
+            if (!selectedSemester) return;
+            subjectsList.innerHTML = '';
+            const subjectsRef = database.ref(`Semester${selectedSemester}/subjects`);
+            subjectsRef.on('value', (snapshot) => {
+                subjectsList.innerHTML = '';
+                if (!snapshot.exists()) {
+                    subjectsList.innerHTML = '<p class="text-center text-gray-600 text-sm sm:text-base slide-in">No subjects available.</p>';
+                    return;
+                }
+                let index = 0;
+                snapshot.forEach((childSnapshot) => {
+                    const subject = childSnapshot.val();
+                    const card = document.createElement('div');
+                    card.className = 'subject-card bg-white p-2 rounded-lg shadow-md cursor-pointer';
+                    card.style.setProperty('--delay', index++);
+                    card.innerHTML = `
+                        <img src="${subject.imageUrl}" alt="${subject.name}" class="w-full rounded-lg mb-2 slide-in-bounce">
+                        <h3 class="text-sm sm:text-base font-medium text-center text-gray-800 truncate slide-in-bounce">${subject.name}</h3>
+                    `;
+                    card.addEventListener('click', () => {
+                        selectedSubject = subject.name;
+                        subjectTitle.textContent = `${subject.name} Notes`;
+                        notesSection.classList.remove('hidden');
+                        subjectGrid.classList.add('hidden');
+                        fetchNotes();
+                    });
+                    subjectsList.appendChild(card);
+                });
+            }, (error) => alert(`Error fetching subjects: ${error.message}`));
+        }
+
+        // Fetch Notes
+        function fetchNotes() {
+            if (!selectedSemester || !selectedSubject) return;
+            progressBar.classList.remove('hidden');
+            notesRef = database.ref(`Semester${selectedSemester}/subjects/${selectedSubject}/${selectedCategory}`);
+            notesRef.on('value', (snapshot) => {
+                allNotes = [];
+                if (!snapshot.exists()) {
+                    notesList.innerHTML = '<li class="text-center text-gray-600 text-sm sm:text-base slide-in">No chapters available for this category.</li>';
+                    progressBar.classList.add('hidden');
+                    return;
+                }
+                snapshot.forEach((childSnapshot) => {
+                    const note = childSnapshot.val();
+                    allNotes.push(note);
+                });
+                allNotes.sort((a, b) => a.buttonText.localeCompare(b.buttonText));
+                displayNotes(allNotes);
+                progressBar.classList.add('hidden');
+            }, (error) => {
+                alert(`Error fetching chapters: ${error.message}`);
+                progressBar.classList.add('hidden');
+            });
+        }
+
+        // Display Notes
+        function displayNotes(notes) {
+            notesList.innerHTML = '';
+            notes.forEach((note, index) => {
+                const li = document.createElement('li');
+                li.className = 'bg-white p-2 rounded-lg shadow-md hover:bg-[#cbe5ff]';
+                li.style.setProperty('--delay', index);
+                li.innerHTML = `
+                    <a href="${note.buttonLink}" target="_blank" class="block text-sm sm:text-base slide-in-bounce">
+                        <span class="font-medium truncate">${note.buttonText}</span>
+                        <br>
+                        <span class="text-xs sm:text-sm text-gray-600 truncate">${note.buttonLink}</span>
+                    </a>
+                `;
+                notesList.appendChild(li);
+            });
+        }
+
+        // Search Notes
+        searchBar.addEventListener('input', () => {
+            const searchTerm = searchBar.value.toLowerCase().trim();
+            const filteredNotes = allNotes.filter(note => note.buttonText.toLowerCase().includes(searchTerm));
+            displayNotes(filteredNotes);
+        });
+
+        // Image Preview for Subject Image URL
+        subjectImageUrlInput.addEventListener('input', () => {
+            const url = subjectImageUrlInput.value.trim();
+            if (url && isValidUrl(url)) {
+                subjectImagePreview.src = url;
+                subjectImagePreview.style.display = 'block';
+            } else {
+                subjectImagePreview.style.display = 'none';
+            }
+        });
+
+        // URL Validation
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Add Subject (Admin)
+        addSubjectBtn.addEventListener('click', () => {
+            const subjectName = subjectNameInput.value.trim();
+            const imageUrl = subjectImageUrlInput.value.trim();
+            if (!subjectName || !imageUrl || !selectedSemester) {
+                alert('Please provide subject name, a valid image URL, and select a semester.');
+                return;
+            }
+            if (!isValidUrl(imageUrl)) {
+                alert('Please enter a valid image URL.');
+                return;
+            }
+            database.ref(`Semester${selectedSemester}/subjects/${subjectName}`).set({
+                name: subjectName,
+                imageUrl: imageUrl
+            }).then(() => {
+                alert('Subject added successfully!');
+                subjectNameInput.value = '';
+                subjectImageUrlInput.value = '';
+                subjectImagePreview.style.display = 'none';
+            }).catch((error) => alert(`Error adding subject: ${error.message}`));
+        });
+
+        // Add Note (Admin)
+        addNoteBtn.addEventListener('click', () => {
+            const noteText = noteTextInput.value.trim();
+            const noteLink = noteLinkInput.value.trim();
+            if (!noteText || !noteLink || !selectedSemester || !selectedSubject) {
+                alert('Please provide chapter title, link, and ensure semester and subject are selected.');
+                return;
+            }
+            if (!isValidUrl(noteLink)) {
+                alert('Please enter a valid chapter link URL.');
+                return;
+            }
+            const newNoteRef = database.ref(`Semester${selectedSemester}/subjects/${selectedSubject}/${selectedCategory}`).push();
+            newNoteRef.set({
+                buttonText: noteText,
+                buttonLink: noteLink
+            }).then(() => {
+                alert('Chapter added successfully!');
+                noteTextInput.value = '';
+                noteLinkInput.value = '';
+            }).catch((error) => alert(`Error adding chapter: ${error.message}`));
+        });
+    </script>
+</body>
 </html>
