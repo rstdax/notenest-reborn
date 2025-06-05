@@ -45,6 +45,27 @@
         .image-selector img:hover, .image-selector img.selected {
             border-color: #1e90ff;
         }
+        .dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .dialog-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .dialog-open {
+            display: flex;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -57,29 +78,38 @@
         </div>
         <div class="p-6">
             <h2 class="text-2xl font-ubuntu text-center text-gray-900 mb-2">User Profile</h2>
-            <div class="flex justify-center mb-6">
-                <img id="profilePic" src="https://via.placeholder.com/150?text=Default" alt="Profile Picture" class="profile-pic">
+            <div class="flex justify-center mb-6 relative">
+                <img id="profilePic" src="https://cdn-icons-png.flaticon.com/256/8996/8996013.png" alt="Profile Picture" class="profile-pic">
+                <button onclick="openImageDialog()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
             </div>
             <div class="text-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-700">Email</h3>
                 <p id="userEmail" class="text-gray-600">Loading...</p>
-            </div>
-            <div class="mb-4">
-                <h3 class="text-lg font-semibold text-center text-gray-700 mb-2">Select Profile Picture</h3>
-                <div class="image-selector flex justify-center space-x-2 flex-wrap">
-                    <img src="https://via.placeholder.com/60?text=Pic1" alt="Pic1" onclick="selectProfilePic(this.src)">
-                    <img src="https://via.placeholder.com/60?text=Pic2" alt="Pic2" onclick="selectProfilePic(this.src)">
-                    <img src="https://via.placeholder.com/60?text=Pic3" alt="Pic3" onclick="selectProfilePic(this.src)">
-                    <img src="https://via.placeholder.com/60?text=Pic4" alt="Pic4" onclick="selectProfilePic(this.src)">
-                    <img src="https://via.placeholder.com/60?text=Pic5" alt="Pic5" onclick="selectProfilePic(this.src)">
-                    <img src="https://via.placeholder.com/60?text=Pic6" alt="Pic6" onclick="selectProfilePic(this.src)">
-                </div>
             </div>
             <div class="error-message" id="error"></div>
             <div class="success-message" id="success"></div>
             <div class="flex justify-center space-x-4 mt-6">
                 <button onclick="resetPassword()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">Reset Password</button>
                 <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="imageDialog" class="dialog">
+        <div class="dialog-content">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">Choose Profile Picture</h3>
+            <div class="image-selector grid grid-cols-3 gap-4">
+                <img src="https://cdn-icons-png.flaticon.com/256/8996/8996013.png" alt="Pic1" onclick="selectProfilePic(this.src)">
+                <img src="https://cdn-icons-png.flaticon.com/256/7603/7603099.png" alt="Pic2" onclick="selectProfilePic(this.src)">
+                <img src="https://cdn-icons-png.flaticon.com/256/9755/9755000.png" alt="Pic3" onclick="selectProfilePic(this.src)">
+                <img src="https://cdn-icons-png.flaticon.com/256/9799/9799870.png" alt="Pic4" onclick="selectProfilePic(this.src)">
+                <img src="https://cdn-icons-png.flaticon.com/256/7302/7302245.png" alt="Pic5" onclick="selectProfilePic(this.src)">
+                <img src="https://cdn-icons-png.flaticon.com/256/7024/7024232.png" alt="Pic6" onclick="selectProfilePic(this.src)">
+            </div>
+            <div class="flex justify-end mt-4">
+                <button onclick="closeImageDialog()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">Close</button>
             </div>
         </div>
     </div>
@@ -110,7 +140,7 @@
             if (user) {
                 document.getElementById('userEmail').textContent = user.email;
             } else {
-                location.replace("login.html"); // Redirect to login if not authenticated
+                location.replace("login.html");
             }
         });
 
@@ -122,6 +152,15 @@
                 img.classList.remove('selected');
                 if (img.src === src) img.classList.add('selected');
             });
+            closeImageDialog();
+        }
+
+        function openImageDialog() {
+            document.getElementById('imageDialog').classList.add('dialog-open');
+        }
+
+        function closeImageDialog() {
+            document.getElementById('imageDialog').classList.remove('dialog-open');
         }
 
         function resetPassword() {
