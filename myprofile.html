@@ -136,7 +136,7 @@
             if (user) {
                 document.getElementById('userEmail').textContent = user.email;
             } else {
-                location.replace("login.html");
+                location.replace("https://rstdax.github.io/notenest-reborn/login.html");
             }
         });
 
@@ -181,7 +181,7 @@
             firebase.auth().signOut()
                 .then(() => {
                     localStorage.removeItem('profilePic');
-                    location.replace("login.html");
+                    location.replace("https://rstdax.github.io/notenest-reborn/login.html");
                 })
                 .catch((error) => {
                     document.getElementById('error').textContent = error.message;
