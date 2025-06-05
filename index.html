@@ -20,8 +20,7 @@
         }
         header {
             background-color: white;
-            <! background: linear-gradient(90deg, #1e3a8a, #3b82f6); >
-            color: white;
+            color: black;
             padding: 1rem 2rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             position: sticky;
@@ -46,7 +45,6 @@
             border-radius: 0.25rem;
         }
         h1 {
-        
             font-size: 1.75rem;
             font-weight: 700;
             letter-spacing: -0.025em;
@@ -126,6 +124,30 @@
         .btn-primary:focus {
             outline: 2px solid #93c5fd;
             outline-offset: 2px;
+        }
+        .btn-back {
+            background: #6b7280;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .btn-back:hover {
+            background: #4b5563;
+            transform: scale(1.05);
+        }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: scale(1.05);
         }
         .tab {
             flex: 1;
@@ -231,17 +253,26 @@
             border-radius: 0.5rem;
             animation: imagePreview 0.3s ease-out;
         }
+        #slideshow-image-preview {
+            max-height: 100px;
+            aspect-ratio: 690/242;
+            object-fit: cover;
+            display: none;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            animation: imagePreview 0.3s ease-out;
+        }
         @keyframes imagePreview {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
-        input, textarea {
+        input, textarea, select {
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;
             padding: 10px;
             transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
         }
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             border-color: #2563eb;
             transform: scale(1.01);
             box-shadow: 0 0 8px rgba(37, 99, 235, 0.2);
@@ -258,6 +289,46 @@
             opacity: 0;
             transform: translateY(10px);
         }
+        .slideshow-container {
+            position: relative;
+            max-width: 100%;
+            height: auto;
+            aspect-ratio: 690/242;
+            max-height: 242px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        .slideshow-image {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 690/242;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .slideshow-image.active {
+            opacity: 1;
+        }
+        .admin-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .admin-item img {
+            max-height: 60px;
+            aspect-ratio: 1/1; /* For subject images in admin panel */
+            object-fit: cover;
+            border-radius: 0.25rem;
+        }
+        #slideshow-images-list .admin-item img {
+            aspect-ratio: 690/242; /* For slideshow images in admin panel */
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -265,7 +336,7 @@
         <div class="header-content">
             <div class="logo-container">
                 <img src="https://raw.githubusercontent.com/rstdax/notenest-reborn/refs/heads/main/notenest_logo_new.jpg" alt="NoteNest Logo" class="logo">
-                <h1>NoteNest</h1>
+                <h1>NOTENEST</h1>
             </div>
             <button style="display:none;" id="logout-btn" class="btn-primary hidden" aria-label="Logout">Logout</button>
         </div>
@@ -274,6 +345,7 @@
     <main class="container mx-auto px-4 py-6 flex-grow max-w-7xl">
         <!-- Semester Selection -->
         <section id="semester-selection" class="mb-8 hidden">
+            <div class="slideshow-container" id="slideshow-container"></div>
             <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6 slide-in">Choose Your Semester</h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <button class="semester-btn btn-primary slide-in" data-semester="1" aria-label="Semester 1">Semester 1</button>
@@ -289,13 +361,15 @@
 
         <!-- Subject Grid -->
         <section id="subject-grid" class="hidden">
+            <button id="back-to-semesters" class="btn-back mb-4 slide-in" aria-label="Back to semesters">Back to Semesters</button>
             <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6 slide-in">Select Subject</h2>
+            <input type="text" id="subject-search-bar" placeholder="Search subjects..." class="p-2 w-full max-w-md mx-auto mb-6 slide-in" aria-label="Search subjects">
             <div id="subjects-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
-            <button id="back-to-semesters" class="mt-6 btn-primary w-full max-w-sm mx-auto slide-in" aria-label="Back to semesters">Back to Semesters</button>
         </section>
 
         <!-- Notes Section -->
         <section id="notes-section" class="hidden">
+            <button id="back-to-subjects" class="btn-back mb-4 slide-in" aria-label="Back to subjects">Back to Subjects</button>
             <h2 id="subject-title" class="text-2xl font-semibold text-center text-gray-800 mb-6 slide-in"></h2>
             <div class="flex flex-wrap justify-center gap-2 mb-6 max-w-md mx-auto slide-in">
                 <div class="tab" data-category="Major" aria-label="Major notes">Major</div>
@@ -309,24 +383,71 @@
                 <div class="spinner"></div>
             </div>
             <ul id="notes-list" class="w-full max-w-md mx-auto space-y-3"></ul>
-            <button id="back-to-subjects" class="mt-6 btn-primary w-full max-w-sm mx-auto slide-in" aria-label="Back to subjects">Back to Subjects</button>
         </section>
 
         <!-- Admin Panel -->
-        <section id="admin-panel" class="hidden mt-8 bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-auto slide-in">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Admin Panel</h2>
+        <section id="admin-panel" class="hidden mt-8 bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full mx-auto slide-in">
+            <button id="back-to-semesters-admin" class="btn-back mb-4 slide-in" aria-label="Back to semesters">Back to Semesters</button>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Admin Content Management</h2>
+            
+            <!-- Manage Slideshow Images -->
             <div class="mb-6">
-                <h3 class="text-lg font-medium mb-3 slide-in">Add New Subject</h3>
+                <h3 class="text-lg font-medium mb-3 slide-in">Manage Slideshow Images</h3>
+                <input type="url" id="slideshow-image-url" placeholder="Slideshow Image URL" class="p-2 w-full mb-3" aria-label="Slideshow image URL">
+                <img id="slideshow-image-preview" src="" alt="Image Preview" class="w-full rounded-lg">
+                <button id="add-slideshow-image-btn" class="w-full btn-primary mt-3" aria-label="Add slideshow image">Add Image</button>
+                <div id="slideshow-images-list" class="mt-4 space-y-2"></div>
+            </div>
+
+            <!-- Manage Subjects -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-3 slide-in">Manage Subjects</h3>
+                <select id="subject-semester" class="p-2 w-full mb-3" aria-label="Select semester">
+                    <option value="" disabled selected>Select Semester</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                    <option value="7">Semester 7</option>
+                    <option value="8">Semester 8</option>
+                </select>
                 <input type="text" id="subject-name" placeholder="Subject Name" class="p-2 w-full mb-3" aria-label="Subject name">
-                <input type="url" id="subject-image-url" placeholder="Image URL" class="p-2 w-full mb-3" aria-label="Subject image URL">
+                <input type="url" id="subject-image-url" placeholder="Subject Image URL" class="p-2 w-full mb-3" aria-label="Subject image URL">
                 <img id="subject-image-preview" src="" alt="Image Preview" class="w-full rounded-lg">
                 <button id="add-subject-btn" class="w-full btn-primary mt-3" aria-label="Add subject">Add Subject</button>
+                <div id="subjects-list-admin" class="mt-4 space-y-2"></div>
             </div>
+
+            <!-- Manage Chapters -->
             <div>
-                <h3 class="text-lg font-medium mb-3 slide-in">Add/Modify Chapter</h3>
+                <h3 class="text-lg font-medium mb-3 slide-in">Manage Chapters</h3>
+                <select id="chapter-semester" class="p-2 w-full mb-3" aria-label="Select semester for chapter">
+                    <option value="" disabled selected>Select Semester</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                    <option value="7">Semester 7</option>
+                    <option value="8">Semester 8</option>
+                </select>
+                <select id="chapter-subject" class="p-2 w-full mb-3" aria-label="Select subject for chapter">
+                    <option value="" disabled selected>Select Subject</option>
+                </select>
+                <select id="chapter-category" class="p-2 w-full mb-3" aria-label="Select category">
+                    <option value="Major">Major</option>
+                    <option value="Minor">Minor</option>
+                    <option value="AEC">AEC</option>
+                    <option value="IDC">IDC/MDC</option>
+                    <option value="SEC">SEC</option>
+                </select>
                 <input type="text" id="note-text" placeholder="Chapter Title" class="p-2 w-full mb-3" aria-label="Chapter title">
                 <input type="url" id="note-link" placeholder="Chapter Link URL" class="p-2 w-full mb-3" aria-label="Chapter link">
                 <button id="add-note-btn" class="w-full btn-primary" aria-label="Add chapter">Add Chapter</button>
+                <div id="notes-list-admin" class="mt-4 space-y-2"></div>
             </div>
         </section>
 
@@ -373,6 +494,7 @@
         const subjectsList = document.getElementById('subjects-list');
         const notesList = document.getElementById('notes-list');
         const searchBar = document.getElementById('search-bar');
+        const subjectSearchBar = document.getElementById('subject-search-bar');
         const progressBar = document.getElementById('progress-bar');
         const subjectTitle = document.getElementById('subject-title');
         const loginBtn = document.getElementById('login-btn');
@@ -384,18 +506,31 @@
         const subjectNameInput = document.getElementById('subject-name');
         const subjectImageUrlInput = document.getElementById('subject-image-url');
         const subjectImagePreview = document.getElementById('subject-image-preview');
+        const subjectSemester = document.getElementById('subject-semester');
         const addNoteBtn = document.getElementById('add-note-btn');
         const noteTextInput = document.getElementById('note-text');
         const noteLinkInput = document.getElementById('note-link');
+        const chapterSemester = document.getElementById('chapter-semester');
+        const chapterSubject = document.getElementById('chapter-subject');
+        const chapterCategory = document.getElementById('chapter-category');
         const backToSemesters = document.getElementById('back-to-semesters');
         const backToSubjects = document.getElementById('back-to-subjects');
+        const backToSemestersAdmin = document.getElementById('back-to-semesters-admin');
         const footer = document.getElementById('footer');
+        const slideshowContainer = document.getElementById('slideshow-container');
+        const addSlideshowImageBtn = document.getElementById('add-slideshow-image-btn');
+        const slideshowImageUrlInput = document.getElementById('slideshow-image-url');
+        const slideshowImagePreview = document.getElementById('slideshow-image-preview');
+        const slideshowImagesList = document.getElementById('slideshow-images-list');
+        const subjectsListAdmin = document.getElementById('subjects-list-admin');
+        const notesListAdmin = document.getElementById('notes-list-admin');
 
         let selectedSemester = sessionStorage.getItem('selectedSemester') || null;
         let selectedSubject = null;
         let selectedCategory = 'Major';
         let notesRef = null;
         let allNotes = [];
+        let allSubjects = [];
 
         // Authentication State Listener
         auth.onAuthStateChanged((user) => {
@@ -405,13 +540,23 @@
                 logoutBtn.classList.remove('hidden');
                 if (user.email === 'rstrohan1@gmail.com') {
                     adminPanel.classList.remove('hidden');
-                }
-                if (selectedSemester) {
-                    semesterSelection.classList.add('hidden');
-                    subjectGrid.classList.remove('hidden');
-                    fetchSubjects();
+                    loadAdminContent();
+                    if (!selectedSemester) {
+                        semesterSelection.classList.remove('hidden');
+                        fetchSlideshowImages();
+                    } else {
+                        subjectGrid.classList.remove('hidden');
+                        fetchSubjects();
+                    }
                 } else {
-                    semesterSelection.classList.remove('hidden');
+                    if (selectedSemester) {
+                        semesterSelection.classList.add('hidden');
+                        subjectGrid.classList.remove('hidden');
+                        fetchSubjects();
+                    } else {
+                        semesterSelection.classList.remove('hidden');
+                        fetchSlideshowImages();
+                    }
                 }
             } else {
                 authSection.classList.remove('hidden');
@@ -421,6 +566,7 @@
                 notesSection.classList.add('hidden');
                 adminPanel.classList.add('hidden');
                 logoutBtn.classList.add('hidden');
+                slideshowContainer.innerHTML = '';
             }
         });
 
@@ -459,6 +605,8 @@
         // Logout
         logoutBtn.addEventListener('click', () => {
             auth.signOut().catch((error) => alert(`Error signing out: ${error.message}`));
+            sessionStorage.removeItem('selectedSemester');
+            selectedSemester = null;
         });
 
         // Semester Selection
@@ -468,6 +616,7 @@
                 sessionStorage.setItem('selectedSemester', selectedSemester);
                 semesterSelection.classList.add('hidden');
                 subjectGrid.classList.remove('hidden');
+                slideshowContainer.classList.add('hidden');
                 fetchSubjects();
             });
         });
@@ -477,12 +626,25 @@
             subjectGrid.classList.add('hidden');
             notesSection.classList.add('hidden');
             semesterSelection.classList.remove('hidden');
+            slideshowContainer.classList.remove('hidden');
+            fetchSlideshowImages();
         });
 
         // Back to Subjects
         backToSubjects.addEventListener('click', () => {
             notesSection.classList.add('hidden');
             subjectGrid.classList.remove('hidden');
+            fetchSubjects();
+        });
+
+        // Back to Semesters (Admin)
+        backToSemestersAdmin.addEventListener('click', () => {
+            adminPanel.classList.add('hidden');
+            semesterSelection.classList.remove('hidden');
+            subjectGrid.classList.add('hidden');
+            notesSection.classList.add('hidden');
+            slideshowContainer.classList.remove('hidden');
+            fetchSlideshowImages();
         });
 
         // Tab Selection
@@ -499,12 +661,61 @@
         // Set default tab
         document.querySelector('.tab[data-category="Major"]').classList.add('active');
 
+        // Fetch Slideshow Images
+        function fetchSlideshowImages() {
+            const slideshowRef = database.ref('slideshowImages');
+            slideshowRef.once('value', (snapshot) => {
+                slideshowContainer.innerHTML = '';
+                if (!snapshot.exists()) {
+                    slideshowContainer.innerHTML = '<p class="text-center text-gray-600">No images available for slideshow.</p>';
+                    return;
+                }
+                const images = [];
+                snapshot.forEach((childSnapshot) => {
+                    const image = childSnapshot.val();
+                    if (image.imageUrl && isValidUrl(image.imageUrl)) {
+                        images.push({ key: childSnapshot.key, imageUrl: image.imageUrl });
+                    }
+                });
+                if (images.length === 0) {
+                    slideshowContainer.innerHTML = '<p class="text-center text-gray-600">No images available for slideshow.</p>';
+                    return;
+                }
+                images.forEach((image, index) => {
+                    const img = document.createElement('img');
+                    img.src = image.imageUrl;
+                    img.alt = `Slideshow Image ${index + 1}`;
+                    img.className = 'slideshow-image';
+                    if (index === 0) img.classList.add('active');
+                    slideshowContainer.appendChild(img);
+                });
+                startSlideshow(images.length);
+            }, (error) => {
+                console.error(`Error fetching slideshow images: ${error.message}`);
+                slideshowContainer.innerHTML = '<p class="text-center text-gray-600">Error loading slideshow images.</p>';
+            });
+        }
+
+        // Start Slideshow
+        function startSlideshow(imageCount) {
+            let currentIndex = 0;
+            const images = slideshowContainer.querySelectorAll('.slideshow-image');
+            if (images.length === 0) return;
+
+            setInterval(() => {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % imageCount;
+                images[currentIndex].classList.add('active');
+            }, 3000);
+        }
+
         // Fetch Subjects
         function fetchSubjects() {
             if (!selectedSemester) return;
             subjectsList.innerHTML = '';
             const subjectsRef = database.ref(`Semester${selectedSemester}/subjects`);
             subjectsRef.on('value', (snapshot) => {
+                allSubjects = [];
                 subjectsList.innerHTML = '';
                 if (!snapshot.exists()) {
                     subjectsList.innerHTML = '<p class="text-center text-gray-600 text-base slide-in">No subjects available.</p>';
@@ -513,6 +724,7 @@
                 let index = 0;
                 snapshot.forEach((childSnapshot) => {
                     const subject = childSnapshot.val();
+                    allSubjects.push(subject);
                     const card = document.createElement('div');
                     card.className = 'subject-card';
                     card.style.setProperty('--delay', index++);
@@ -529,7 +741,40 @@
                     });
                     subjectsList.appendChild(card);
                 });
+                subjectSearchBar.dispatchEvent(new Event('input'));
             }, (error) => alert(`Error fetching subjects: ${error.message}`));
+        }
+
+        // Search Subjects
+        subjectSearchBar.addEventListener('input', () => {
+            const searchTerm = subjectSearchBar.value.toLowerCase().trim();
+            const filteredSubjects = allSubjects.filter(subject => subject.name.toLowerCase().includes(searchTerm));
+            displaySubjects(filteredSubjects);
+        });
+
+        // Display Subjects
+        function displaySubjects(subjects) {
+            subjectsList.innerHTML = '';
+            subjects.forEach((subject, index) => {
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                card.style.setProperty('--delay', index);
+                card.innerHTML = `
+                    <img src="${subject.imageUrl}" alt="${subject.name}" class="slide-in-bounce">
+                    <h3 class="slide-in-bounce">${subject.name}</h3>
+                `;
+                card.addEventListener('click', () => {
+                    selectedSubject = subject.name;
+                    subjectTitle.textContent = `${subject.name} Notes`;
+                    notesSection.classList.remove('hidden');
+                    subjectGrid.classList.add('hidden');
+                    fetchNotes();
+                });
+                subjectsList.appendChild(card);
+            });
+            if (subjects.length === 0) {
+                subjectsList.innerHTML = '<p class="text-center text-gray-600 text-base slide-in">No subjects found.</p>';
+            }
         }
 
         // Fetch Notes
@@ -546,6 +791,7 @@
                 }
                 snapshot.forEach((childSnapshot) => {
                     const note = childSnapshot.val();
+                    note.key = childSnapshot.key;
                     allNotes.push(note);
                 });
                 allNotes.sort((a, b) => a.buttonText.localeCompare(b.buttonText));
@@ -593,6 +839,17 @@
             }
         });
 
+        // Image Preview for Slideshow Image URL
+        slideshowImageUrlInput.addEventListener('input', () => {
+            const url = slideshowImageUrlInput.value.trim();
+            if (url && isValidUrl(url)) {
+                slideshowImagePreview.src = url;
+                slideshowImagePreview.style.display = 'block';
+            } else {
+                slideshowImagePreview.style.display = 'none';
+            }
+        });
+
         // URL Validation
         function isValidUrl(string) {
             try {
@@ -603,19 +860,118 @@
             }
         }
 
-        // Add Subject (Admin)
-        addSubjectBtn.addEventListener('click', () => {
-            const subjectName = subjectNameInput.value.trim();
-            const imageUrl = subjectImageUrlInput.value.trim();
-            if (!subjectName || !imageUrl || !selectedSemester) {
-                alert('Please provide subject name, a valid image URL, and select a semester.');
+        // Load Admin Content
+        function loadAdminContent() {
+            loadSlideshowImagesAdmin();
+            loadSubjectsAdmin();
+            loadNotesAdmin();
+            populateChapterSubjects();
+        }
+
+        // Load Slideshow Images for Admin
+        function loadSlideshowImagesAdmin() {
+            const slideshowRef = database.ref('slideshowImages');
+            slideshowRef.on('value', (snapshot) => {
+                slideshowImagesList.innerHTML = '';
+                if (!snapshot.exists()) {
+                    slideshowImagesList.innerHTML = '<p class="text-center text-gray-600">No slideshow images available.</p>';
+                    return;
+                }
+                snapshot.forEach((childSnapshot) => {
+                    const image = childSnapshot.val();
+                    const div = document.createElement('div');
+                    div.className = 'admin-item flex justify-between items-center';
+                    div.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <img src="${image.imageUrl}" alt="Slideshow Image">
+                            <span class="text-sm truncate">${image.imageUrl}</span>
+                        </div>
+                        <button class="btn-danger" data-key="${childSnapshot.key}" onclick="deleteSlideshowImage('${childSnapshot.key}')">Delete</button>
+                    `;
+                    slideshowImagesList.appendChild(div);
+                });
+            }, (error) => alert(`Error loading slideshow images: ${error.message}`));
+        }
+
+        // Add Slideshow Image
+        addSlideshowImageBtn.addEventListener('click', () => {
+            const imageUrl = slideshowImageUrlInput.value.trim();
+            if (!imageUrl) {
+                alert('Please provide a valid image URL.');
                 return;
             }
             if (!isValidUrl(imageUrl)) {
                 alert('Please enter a valid image URL.');
                 return;
             }
-            database.ref(`Semester${selectedSemester}/subjects/${subjectName}`).set({
+            const newImageRef = database.ref('slideshowImages').push();
+            newImageRef.set({
+                imageUrl: imageUrl
+            }).then(() => {
+                alert('Slideshow image added successfully!');
+                slideshowImageUrlInput.value = '';
+                slideshowImagePreview.style.display = 'none';
+            }).catch((error) => alert(`Error adding slideshow image: ${error.message}`));
+        });
+
+        // Delete Slideshow Image
+        window.deleteSlideshowImage = function(key) {
+            if (confirm('Are you sure you want to delete this slideshow image?')) {
+                database.ref(`slideshowImages/${key}`).remove()
+                    .then(() => alert('Slideshow image deleted successfully!'))
+                    .catch((error) => alert(`Error deleting slideshow image: ${error.message}`));
+            }
+        };
+
+        // Load Subjects for Admin
+        function loadSubjectsAdmin() {
+            subjectSemester.addEventListener('change', () => {
+                const semester = subjectSemester.value;
+                if (!semester) {
+                    subjectsListAdmin.innerHTML = '<p class="text-center text-gray-600">Select a semester to view subjects.</p>';
+                    return;
+                }
+                const subjectsRef = database.ref(`Semester${semester}/subjects`);
+                subjectsRef.on('value', (snapshot) => {
+                    subjectsListAdmin.innerHTML = '';
+                    if (!snapshot.exists()) {
+                        subjectsListAdmin.innerHTML = '<p class="text-center text-gray-600">No subjects available.</p>';
+                        return;
+                    }
+                    snapshot.forEach((childSnapshot) => {
+                        const subject = childSnapshot.val();
+                        const div = document.createElement('div');
+                        div.className = 'admin-item flex justify-between items-center';
+                        div.innerHTML = `
+                            <div class="flex items-center gap-2">
+                                <img src="${subject.imageUrl}" alt="${subject.name}">
+                                <span class="font-medium">${subject.name}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary" onclick="editSubject('${semester}', '${childSnapshot.key}', '${subject.name}', '${subject.imageUrl}')">Edit</button>
+                                <button class="btn-danger" onclick="deleteSubject('${semester}', '${childSnapshot.key}')">Delete</button>
+                            </div>
+                        `;
+                        subjectsListAdmin.appendChild(div);
+                    });
+                }, (error) => alert(`Error loading subjects: ${error.message}`));
+            });
+        }
+
+        // Add Subject
+        addSubjectBtn.addEventListener('click', () => {
+            const semester = subjectSemester.value;
+            const subjectName = subjectNameInput.value.trim();
+            const imageUrl = subjectImageUrlInput.value.trim();
+            if (!semester || !subjectName || !imageUrl) {
+                alert('Please provide semester, subject name, and a valid image URL.');
+                return;
+            }
+            if (!isValidUrl(imageUrl)) {
+                alert('Please enter a valid image URL.');
+                return;
+            }
+            database.ref(`Semester${semester}/subjects/${subjectName}`).set({
                 name: subjectName,
                 imageUrl: imageUrl
             }).then(() => {
@@ -626,19 +982,129 @@
             }).catch((error) => alert(`Error adding subject: ${error.message}`));
         });
 
-        // Add Note (Admin)
+        // Edit Subject
+        window.editSubject = function(semester, key, name, imageUrl) {
+            subjectSemester.value = semester;
+            subjectNameInput.value = name;
+            subjectImageUrlInput.value = imageUrl;
+            subjectImagePreview.src = imageUrl;
+            subjectImagePreview.style.display = 'block';
+            addSubjectBtn.textContent = 'Update Subject';
+            addSubjectBtn.onclick = () => {
+                const newName = subjectNameInput.value.trim();
+                const newImageUrl = subjectImageUrlInput.value.trim();
+                if (!newName || !newImageUrl) {
+                    alert('Please provide subject name and a valid image URL.');
+                    return;
+                }
+                if (!isValidUrl(newImageUrl)) {
+                    alert('Please enter a valid image URL.');
+                    return;
+                }
+                database.ref(`Semester${semester}/subjects/${key}`).remove()
+                    .then(() => {
+                        database.ref(`Semester${semester}/subjects/${newName}`).set({
+                            name: newName,
+                            imageUrl: newImageUrl
+                        }).then(() => {
+                            alert('Subject updated successfully!');
+                            subjectNameInput.value = '';
+                            subjectImageUrlInput.value = '';
+                            subjectImagePreview.style.display = 'none';
+                            addSubjectBtn.textContent = 'Add Subject';
+                            addSubjectBtn.onclick = addSubjectBtn.originalClick;
+                        }).catch((error) => alert(`Error updating subject: ${error.message}`));
+                    }).catch((error) => alert(`Error updating subject: ${error.message}`));
+            };
+            addSubjectBtn.originalClick = addSubjectBtn.onclick;
+        };
+
+        // Delete Subject
+        window.deleteSubject = function(semester, key) {
+            if (confirm('Are you sure you want to delete this subject and all its chapters?')) {
+                database.ref(`Semester${semester}/subjects/${key}`).remove()
+                    .then(() => alert('Subject deleted successfully!'))
+                    .catch((error) => alert(`Error deleting subject: ${error.message}`));
+            }
+        };
+
+        // Populate Chapter Subjects
+        function populateChapterSubjects() {
+            chapterSemester.addEventListener('change', () => {
+                const semester = chapterSemester.value;
+                chapterSubject.innerHTML = '<option value="" disabled selected>Select Subject</option>';
+                if (!semester) return;
+                const subjectsRef = database.ref(`Semester${semester}/subjects`);
+                subjectsRef.once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        snapshot.forEach((childSnapshot) => {
+                            const subject = childSnapshot.val();
+                            const option = document.createElement('option');
+                            option.value = subject.name;
+                            option.textContent = subject.name;
+                            chapterSubject.appendChild(option);
+                        });
+                    }
+                }, (error) => alert(`Error loading subjects for chapter: ${error.message}`));
+            });
+        }
+
+        // Load Notes for Admin
+        function loadNotesAdmin() {
+            chapterSubject.addEventListener('change', () => {
+                const semester = chapterSemester.value;
+                const subject = chapterSubject.value;
+                const category = chapterCategory.value;
+                if (!semester || !subject || !category) {
+                    notesListAdmin.innerHTML = '<p class="text-center text-gray-600">Select semester, subject, and category to view chapters.</p>';
+                    return;
+                }
+                const notesRef = database.ref(`Semester${semester}/subjects/${subject}/${category}`);
+                notesRef.on('value', (snapshot) => {
+                    notesListAdmin.innerHTML = '';
+                    if (!snapshot.exists()) {
+                        notesListAdmin.innerHTML = '<p class="text-center text-gray-600">No chapters available.</p>';
+                        return;
+                    }
+                    snapshot.forEach((childSnapshot) => {
+                        const note = childSnapshot.val();
+                        const div = document.createElement('div');
+                        div.className = 'admin-item flex justify-between items-center';
+                        div.innerHTML = `
+                            <div class="flex flex-col">
+                                <span class="font-medium">${note.buttonText}</span>
+                                <span class="text-sm text-gray-500 truncate">${note.buttonLink}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary" onclick="editNote('${semester}', '${subject}', '${category}', '${childSnapshot.key}', '${note.buttonText}', '${note.buttonLink}')">Edit</button>
+                                <button class="btn-danger" onclick="deleteNote('${semester}', '${subject}', '${category}', '${childSnapshot.key}')">Delete</button>
+                            </div>
+                        `;
+                        notesListAdmin.appendChild(div);
+                    });
+                }, (error) => alert(`Error loading chapters: ${error.message}`));
+            });
+            chapterCategory.addEventListener('change', () => {
+                chapterSubject.dispatchEvent(new Event('change'));
+            });
+        }
+
+        // Add Note
         addNoteBtn.addEventListener('click', () => {
+            const semester = chapterSemester.value;
+            const subject = chapterSubject.value;
+            const category = chapterCategory.value;
             const noteText = noteTextInput.value.trim();
             const noteLink = noteLinkInput.value.trim();
-            if (!noteText || !noteLink || !selectedSemester || !selectedSubject) {
-                alert('Please provide chapter title, link, and ensure semester and subject are selected.');
+            if (!semester || !subject || !category || !noteText || !noteLink) {
+                alert('Please provide semester, subject, category, chapter title, and link.');
                 return;
             }
             if (!isValidUrl(noteLink)) {
                 alert('Please enter a valid chapter link URL.');
                 return;
             }
-            const newNoteRef = database.ref(`Semester${selectedSemester}/subjects/${selectedSubject}/${selectedCategory}`).push();
+            const newNoteRef = database.ref(`Semester${semester}/subjects/${subject}/${category}`).push();
             newNoteRef.set({
                 buttonText: noteText,
                 buttonLink: noteLink
@@ -648,6 +1114,49 @@
                 noteLinkInput.value = '';
             }).catch((error) => alert(`Error adding chapter: ${error.message}`));
         });
+
+        // Edit Note
+        window.editNote = function(semester, subject, category, key, text, link) {
+            chapterSemester.value = semester;
+            chapterSubject.innerHTML = `<option value="${subject}">${subject}</option>`;
+            chapterCategory.value = category;
+            noteTextInput.value = text;
+            noteLinkInput.value = link;
+            addNoteBtn.textContent = 'Update Chapter';
+            addNoteBtn.onclick = () => {
+                const newText = noteTextInput.value.trim();
+                const newLink = noteLinkInput.value.trim();
+                if (!newText || !newLink) {
+                    alert('Please provide chapter title and link.');
+                    return;
+                }
+                if (!isValidUrl(newLink)) {
+                    alert('Please enter a valid chapter link URL.');
+                    return;
+                }
+                database.ref(`Semester${semester}/subjects/${subject}/${category}/${key}`).set({
+                    buttonText: newText,
+                    buttonLink: newLink
+                }).then(() => {
+                    alert('Chapter updated successfully!');
+                    noteTextInput.value = '';
+                    noteLinkInput.value = '';
+                    addNoteBtn.textContent = 'Add Chapter';
+                    addNoteBtn.onclick = addNoteBtn.originalClick;
+                    chapterSubject.dispatchEvent(new Event('change'));
+                }).catch((error) => alert(`Error updating chapter: ${error.message}`));
+            };
+            addNoteBtn.originalClick = addNoteBtn.onclick;
+        };
+
+        // Delete Note
+        window.deleteNote = function(semester, subject, category, key) {
+            if (confirm('Are you sure you want to delete this chapter?')) {
+                database.ref(`Semester${semester}/subjects/${subject}/${category}/${key}`).remove()
+                    .then(() => alert('Chapter deleted successfully!'))
+                    .catch((error) => alert(`Error deleting chapter: ${error.message}`));
+            }
+        };
     </script>
 </body>
 </html>
